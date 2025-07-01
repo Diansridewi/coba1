@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Bab I: Sudah Besar</title>
+    <!-- Tailwind CSS CDN untuk styling yang cepat dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Mengatur font Inter sebagai default */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Menyembunyikan elemen secara default untuk transisi */
+        .hidden-fade {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .show-fade {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-200 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-2xl w-full">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Kuis Bab I: Sudah Besar</h1>
+        <p class="text-center text-gray-600 mb-8">Uji pemahaman Anda tentang Bab I dari buku Bahasa Indonesia Kelas IV.</p>
+
+        <!-- Container untuk pertanyaan kuis -->
+        <div id="quiz-container">
+            <!-- Pertanyaan akan dimuat di sini oleh JavaScript -->
+        </div>
+
+        <!-- Tombol untuk navigasi atau hasil -->
+        <div class="flex justify-between mt-8">
+            <button id="prev-button" class="bg-gray-300 text-gray-800 px-6 py-3 rounded-xl font-semibold hover:bg-gray-400 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" style="display:none;">
+                Sebelumnya
+            </button>
+            <button id="next-button" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                Selanjutnya
+            </button>
+            <button id="submit-button" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50" style="display:none;">
+                Selesai Kuis
+            </button>
+        </div>
+
+        <!-- Container untuk hasil kuis -->
+        <div id="results-container" class="mt-8 text-center hidden-fade" style="display:none;">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Hasil Kuis Anda</h2>
+            <p class="text-xl text-gray-700 mb-4">Skor Anda: <span id="score" class="font-bold text-blue-600"></span> / <span id="total-questions" class="font-bold text-gray-600"></span></p>
+            <div id="feedback-message" class="text-lg text-gray-700 mb-6"></div>
+            <button id="restart-button" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">
+                Ulangi Kuis
+            </button>
+        </div>
+
+        <!-- Modal untuk pesan (pengganti alert) -->
+        <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white p-6 rounded-xl shadow-lg max-w-sm w-full text-center">
+                <p id="modal-message" class="text-lg text-gray-800 mb-4"></p>
+                <button id="modal-close-button" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data kuis diambil dari struktur yang Anda berikan sebelumnya
+        const quizData = {
+            title: "Kuis Bab I: Sudah Besar (Bahasa Indonesia Kelas IV)",
+            questions: [
+                {
+                    question: "Apa judul Bab I dari buku 'Panduan Guru Bahasa Indonesia: Lihat Sekitar untuk SD/MI Kelas IV'?",
+                    answer_options: [
+                        { text: "Sudah Besar", rationale: "Ini adalah judul yang benar untuk Bab I.", is_correct: true },
+                        { text: "Di Bawah Atap", rationale: "Ini adalah judul Bab II, bukan Bab I.", is_correct: false },
+                        { text: "Lihat Sekitar", rationale: "Ini adalah bagian dari judul buku secara keseluruhan, bukan judul Bab I.", is_correct: false },
+                        { text: "Aku dan Lingkunganku", rationale: "Ini adalah tema Bab I, bukan judulnya.", is_correct: false }
+                    ],
+                    hint: "Judul bab ini berkaitan dengan pertumbuhan dan kemandirian."
+                },
+                {
+                    question: "Berapa alokasi waktu yang disarankan untuk pembelajaran Bab I 'Sudah Besar'?",
+                    answer_options: [
+                        { text: "20 Jam Pelajaran", rationale: "Ini bukan alokasi waktu yang tepat.", is_correct: false },
+                        { text: "26 Jam Pelajaran", rationale: "Ini adalah alokasi waktu yang benar yang disarankan untuk Bab I.", is_correct: true },
+                        { text: "30 Jam Pelajaran", rationale: "Ini bukan alokasi waktu yang tepat.", is_correct: false },
+                        { text: "24 Jam Pelajaran", rationale: "Ini bukan alokasi waktu yang tepat.", is_correct: false }
+                    ],
+                    hint: "Angka ini menunjukkan jumlah jam pelajaran yang cukup untuk menyelesaikan bab ini."
+                },
+                {
+                    question: "Apa salah satu tujuan pembelajaran utama dari Bab I?",
+                    answer_options: [
+                        { text: "Menulis puisi", rationale: "Menulis puisi tidak secara spesifik disebutkan sebagai tujuan pembelajaran utama di Bab I.", is_correct: false },
+                        { text: "Memaknai teks narasi yang dibacakan", rationale: "Memaknai teks narasi yang dibacakan adalah salah satu tujuan pembelajaran yang disebutkan dalam Bab I.", is_correct: true },
+                        { text: "Menghitung luas bangun datar", rationale: "Ini adalah tujuan pembelajaran matematika, bukan Bahasa Indonesia di bab ini.", is_correct: false },
+                        { text: "Melakukan percobaan sains", rationale: "Ini adalah tujuan pembelajaran sains, bukan Bahasa Indonesia di bab ini.", is_correct: false }
+                    ],
+                    hint: "Fokus pembelajaran di bab ini adalah pada pemahaman cerita yang didengar."
+                },
+                {
+                    question: "Kaidah kebahasaan apa yang diajarkan di Bab I terkait jenis kalimat?",
+                    answer_options: [
+                        { text: "Kalimat aktif dan pasif", rationale: "Jenis kalimat ini tidak secara spesifik disebutkan sebagai fokus di Bab I.", is_correct: false },
+                        { text: "Kalimat majemuk dan tunggal", rationale: "Jenis kalimat ini tidak secara spesifik disebutkan sebagai fokus di Bab I.", is_correct: false },
+                        { text: "Kalimat transitif dan intransitif", rationale: "Penggunaan kaidah kebahasaan berupa kalimat transitif dan intransitif adalah salah satu poin materi di Bab I.", is_correct: true },
+                        { text: "Kalimat deklaratif dan interogatif", rationale: "Jenis kalimat ini tidak secara spesifik disebutkan sebagai fokus di Bab I.", is_correct: false }
+                    ],
+                    hint: "Kaidah ini berhubungan dengan objek dalam sebuah kalimat."
+                },
+                {
+                    question: "Cerita apa yang menjadi salah satu pokok materi dalam Bab I?",
+                    answer_options: [
+                        { text: "Si Kancil dan Buaya", rationale: "Ini adalah cerita rakyat umum, tidak disebutkan sebagai pokok materi di Bab I.", is_correct: false },
+                        { text: "Tak Muat Lagi", rationale: "Cerita 'Tak Muat Lagi' adalah salah satu pokok materi yang disebutkan dalam Bab I.", is_correct: true },
+                        { text: "Malin Kundang", rationale: "Ini adalah cerita rakyat umum, tidak disebutkan sebagai pokok materi di Bab I.", is_correct: false },
+                        { text: "Persahabatan Dua Sahabat", rationale: "Ini adalah tema cerita umum, bukan judul cerita spesifik di Bab I.", is_correct: false }
+                    ],
+                    hint: "Cerita ini mengisahkan tentang sesuatu yang tidak bisa digunakan lagi karena ukuran."
+                },
+                {
+                    question: "Apa yang dimaksud dengan makna denotatif yang diajarkan di Bab I?",
+                    answer_options: [
+                        { text: "Makna kiasan atau tidak sebenarnya", rationale: "Ini adalah definisi makna konotatif, bukan denotatif.", is_correct: false },
+                        { text: "Makna yang sama dengan kamus atau makna sebenarnya", rationale: "Makna denotatif adalah makna sebenarnya atau makna lugas suatu kata, seperti yang tercantum dalam kamus.", is_correct: true },
+                        { text: "Makna yang berkaitan dengan perasaan", rationale: "Ini lebih merujuk pada konotasi atau makna emosional.", is_correct: false },
+                        { text: "Makna yang sulit dipahami", rationale: "Ini bukan definisi dari makna denotatif.", is_correct: false }
+                    ],
+                    hint: "Ingatlah tentang arti kata yang paling dasar dan lugas."
+                },
+                {
+                    question: "Salah satu aktivitas pembelajaran di Bab I adalah menulis menggunakan jenis tulisan apa?",
+                    answer_options: [
+                        { text: "Tulisan cetak tebal", rationale: "Tulisan cetak tebal adalah gaya penulisan, bukan jenis tulisan.", is_correct: false },
+                        { text: "Tulisan tangan biasa", rationale: "Meskipun itu tulisan tangan, Bab I secara spesifik mengajarkan jenis tulisan tertentu.", is_correct: false },
+                        { text: "Tulisan tegak bersambung", rationale: "Menulis kalimat dalam tulisan tegak bersambung adalah salah satu keterampilan menulis yang diajarkan di Bab I.", is_correct: true },
+                        { text: "Tulisan miring", rationale: "Tulisan miring adalah gaya penulisan, bukan jenis tulisan.", is_correct: false }
+                    ],
+                    hint: "Jenis tulisan ini sering disebut juga sebagai 'tulisan latin' yang bersambung."
+                },
+                {
+                    question: "Kata kunci 'polkadot' dalam Bab I berkaitan dengan apa?",
+                    answer_options: [
+                        { text: "Sebuah jenis hewan", rationale: "Polkadot adalah pola, bukan hewan.", is_correct: false },
+                        { text: "Sebuah pola pada pakaian", rationale: "Polkadot adalah pola titik-titik yang sering ditemukan pada kain atau pakaian.", is_correct: true },
+                        { text: "Nama makanan", rationale: "Polkadot bukan nama makanan.", is_correct: false },
+                        { text: "Jenis mainan", rationale: "Polkadot bukan jenis mainan.", is_correct: false }
+                    ],
+                    hint: "Kata ini sering digunakan untuk menggambarkan motif tertentu pada kain."
+                },
+                {
+                    question: "Bagaimana Profil Pelajar Pancasila 'Bernalar Kritis' diwujudkan dalam Bab I?",
+                    answer_options: [
+                        { text: "Melalui kegiatan membaca puisi", rationale: "Membaca puisi tidak secara langsung terkait dengan Bernalar Kritis di Bab I.", is_correct: false },
+                        { text: "Melalui refleksi pemikiran dan proses berpikir dalam diskusi", rationale: "Refleksi pemikiran dan proses berpikir, seperti dalam diskusi hubungan kakak-adik, menunjukkan penerapan Bernalar Kritis.", is_correct: true },
+                        { text: "Melalui kegiatan mewarnai gambar", rationale: "Mewarnai gambar tidak secara langsung mengembangkan Bernalar Kritis.", is_correct: false },
+                        { text: "Melalui olahraga bersama", rationale: "Olahraga bersama mengembangkan aspek fisik dan kerja sama, bukan Bernalar Kritis.", is_correct: false }
+                    ],
+                    hint: "Aspek ini berkaitan dengan bagaimana siswa memproses informasi dan gagasan."
+                },
+                {
+                    question: "Apa salah satu aspek penilaian di akhir Bab I?",
+                    answer_options: [
+                        { text: "Kemampuan berhitung cepat", rationale: "Ini adalah penilaian matematika, bukan bahasa Indonesia di bab ini.", is_correct: false },
+                        { text: "Pemahaman teks narasi", rationale: "Penilaian pemahaman teks narasi adalah salah satu aspek yang disebutkan di akhir Bab I.", is_correct: true },
+                        { text: "Keterampilan melukis", rationale: "Ini adalah penilaian seni, bukan bahasa Indonesia di bab ini.", is_correct: false },
+                        { text: "Pengetahuan tentang sejarah", rationale: "Ini adalah penilaian sejarah, bukan bahasa Indonesia di bab ini.", is_correct: false }
+                    ],
+                    hint: "Penilaian ini fokus pada pemahaman cerita yang telah dibaca atau disimak."
+                }
+            ]
+        };
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = new Array(quizData.questions.length).fill(null); // Menyimpan jawaban pengguna
+
+        const quizContainer = document.getElementById('quiz-container');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const submitButton = document.getElementById('submit-button');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreSpan = document.getElementById('score');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const restartButton = document.getElementById('restart-button');
+        const messageModal = document.getElementById('message-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseButton = document.getElementById('modal-close-button');
+
+        /**
+         * Menampilkan pesan modal kustom sebagai pengganti alert().
+         * @param {string} message - Pesan yang akan ditampilkan.
+         */
+        function showMessageModal(message) {
+            modalMessage.textContent = message;
+            messageModal.classList.remove('hidden');
+        }
+
+        /**
+         * Menyembunyikan pesan modal.
+         */
+        function hideMessageModal() {
+            messageModal.classList.add('hidden');
+        }
+
+        /**
+         * Memuat pertanyaan kuis ke dalam DOM.
+         * @param {number} index - Indeks pertanyaan yang akan dimuat.
+         */
+        function loadQuestion(index) {
+            // Memastikan kontainer kuis terlihat dan kontainer hasil tersembunyi
+            quizContainer.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            resultsContainer.classList.remove('show-fade');
+
+            const questionData = quizData.questions[index];
+            quizContainer.innerHTML = `
+                <div id="current-question" class="hidden-fade">
+                    <p class="text-lg font-medium text-gray-700 mb-4">
+                        <span class="text-blue-600">Pertanyaan ${index + 1}</span> dari ${quizData.questions.length}:
+                        ${questionData.question}
+                    </p>
+                    <div class="space-y-3" id="answer-options">
+                        ${questionData.answer_options.map((option, optIndex) => `
+                            <label class="flex items-center bg-gray-50 p-4 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                                <input type="radio" name="question-${index}" value="${optIndex}" class="form-radio h-5 w-5 text-blue-600 focus:ring-blue-500 rounded-full">
+                                <span class="ml-3 text-gray-800 text-base">${option.text}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4 italic">Petunjuk: ${questionData.hint}</p>
+                </div>
+            `;
+
+            // Menambahkan kelas untuk animasi fade-in
+            setTimeout(() => {
+                document.getElementById('current-question').classList.add('show-fade');
+            }, 50); // Sedikit delay agar transisi terlihat
+
+            // Memeriksa apakah ada jawaban yang tersimpan untuk pertanyaan ini dan memilihnya
+            if (userAnswers[index] !== null) {
+                const selectedRadio = quizContainer.querySelector(`input[name="question-${index}"][value="${userAnswers[index]}"]`);
+                if (selectedRadio) {
+                    selectedRadio.checked = true;
+                }
+            }
+
+            updateNavigationButtons();
+        }
+
+        /**
+         * Memperbarui status tombol navigasi (Sebelumnya, Selanjutnya, Selesai Kuis).
+         */
+        function updateNavigationButtons() {
+            prevButton.style.display = currentQuestionIndex > 0 ? 'block' : 'none';
+            nextButton.style.display = currentQuestionIndex < quizData.questions.length - 1 ? 'block' : 'none';
+            submitButton.style.display = currentQuestionIndex === quizData.questions.length - 1 ? 'block' : 'none';
+        }
+
+        /**
+         * Mengambil jawaban yang dipilih pengguna untuk pertanyaan saat ini dan menyimpannya.
+         * @returns {number|null} Indeks jawaban yang dipilih atau null jika tidak ada.
+         */
+        function getSelectedAnswer() {
+            const selectedOption = quizContainer.querySelector(`input[name="question-${currentQuestionIndex}"]:checked`);
+            return selectedOption ? parseInt(selectedOption.value) : null;
+        }
+
+        /**
+         * Menangani klik tombol "Selanjutnya".
+         */
+        nextButton.addEventListener('click', () => {
+            const selectedAnswer = getSelectedAnswer();
+            if (selectedAnswer === null) {
+                showMessageModal('Silakan pilih jawaban sebelum melanjutkan.');
+                return;
+            }
+            userAnswers[currentQuestionIndex] = selectedAnswer; // Simpan jawaban
+            currentQuestionIndex++;
+            loadQuestion(currentQuestionIndex);
+        });
+
+        /**
+         * Menangani klik tombol "Sebelumnya".
+         */
+        prevButton.addEventListener('click', () => {
+            const selectedAnswer = getSelectedAnswer();
+            if (selectedAnswer !== null) {
+                userAnswers[currentQuestionIndex] = selectedAnswer; // Simpan jawaban saat mundur
+            }
+            currentQuestionIndex--;
+            loadQuestion(currentQuestionIndex);
+        });
+
+        /**
+         * Menghitung skor akhir dan menampilkan hasil.
+         */
+        function calculateScore() {
+            score = 0;
+            quizData.questions.forEach((question, index) => {
+                const userAnswerIndex = userAnswers[index];
+                if (userAnswerIndex !== null && question.answer_options[userAnswerIndex].is_correct) {
+                    score++;
+                }
+            });
+        }
+
+        /**
+         * Menangani klik tombol "Selesai Kuis".
+         */
+        submitButton.addEventListener('click', () => {
+            const selectedAnswer = getSelectedAnswer();
+            if (selectedAnswer === null) {
+                showMessageModal('Silakan pilih jawaban terakhir Anda sebelum menyelesaikan kuis.');
+                return;
+            }
+            userAnswers[currentQuestionIndex] = selectedAnswer; // Simpan jawaban terakhir
+
+            calculateScore();
+            quizContainer.style.display = 'none'; // Sembunyikan kontainer pertanyaan
+            prevButton.style.display = 'none';
+            nextButton.style.display = 'none';
+            submitButton.style.display = 'none';
+
+            scoreSpan.textContent = score;
+            totalQuestionsSpan.textContent = quizData.questions.length;
+
+            if (score === quizData.questions.length) {
+                feedbackMessage.textContent = "Selamat! Anda menjawab semua pertanyaan dengan benar!";
+                feedbackMessage.classList.add('text-green-600');
+                feedbackMessage.classList.remove('text-red-600');
+            } else if (score >= quizData.questions.length / 2) {
+                feedbackMessage.textContent = "Kerja bagus! Anda memiliki pemahaman yang baik.";
+                feedbackMessage.classList.add('text-blue-600');
+                feedbackMessage.classList.remove('text-red-600');
+            } else {
+                feedbackMessage.textContent = "Teruslah berlatih! Anda bisa melakukannya lebih baik.";
+                feedbackMessage.classList.add('text-red-600');
+                feedbackMessage.classList.remove('text-blue-600');
+            }
+
+            resultsContainer.style.display = 'block';
+            setTimeout(() => {
+                resultsContainer.classList.add('show-fade');
+            }, 50);
+        });
+
+        /**
+         * Menangani klik tombol "Ulangi Kuis".
+         */
+        restartButton.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers.fill(null); // Reset jawaban pengguna
+            loadQuestion(currentQuestionIndex);
+        });
+
+        /**
+         * Menangani klik tombol tutup modal.
+         */
+        modalCloseButton.addEventListener('click', hideMessageModal);
+
+        // Memuat pertanyaan pertama saat halaman dimuat
+        window.onload = () => {
+            loadQuestion(currentQuestionIndex);
+        };
+    </script>
+</body>
+</html>
